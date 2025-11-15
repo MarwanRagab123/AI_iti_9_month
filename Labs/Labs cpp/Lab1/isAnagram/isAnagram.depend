@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1761031265 source:f:\codeiti\isanagram\main.cpp
+	<iostream>
+	<algorithm>
+

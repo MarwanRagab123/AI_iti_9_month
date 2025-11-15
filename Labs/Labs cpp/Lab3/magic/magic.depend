@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1761026895 source:f:\codeiti\magic\main.cpp
+	<iostream>
+	<windows.h>
+

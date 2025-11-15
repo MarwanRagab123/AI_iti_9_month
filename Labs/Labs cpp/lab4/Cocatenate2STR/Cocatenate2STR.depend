@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1761055331 source:f:\codeiti\cocatenate2str\main.cpp
+	<iostream>
+	<cstring>
+

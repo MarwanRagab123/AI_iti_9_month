@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1761425326 source:f:\codeiti\emp2\main.cpp
+	<iostream>
+	<cstring>
+

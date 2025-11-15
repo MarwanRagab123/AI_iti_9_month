@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1761634335 source:f:\codeiti\shape\main.cpp
+	<iostream>
+	<cstring>
+
