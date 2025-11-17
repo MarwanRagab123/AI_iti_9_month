@@ -3,9 +3,7 @@ from Authentication_System.Login import login_user
 from Projects_Details.add_projects import add_project
 from Projects_Details.delete_project import delete_project
 from Projects_Details.View_projects import view_projects
-from tabulate import tabulate
 from helper.shape import show_banner
-import msvcrt
 
 user_id_global = None
 
@@ -15,17 +13,17 @@ if __name__ == "__main__":
     while True:
         print("\n=== Main Menu ===")
             
-        choice = input("1) if you have an account, Login \n"
-                "2) if you don't have an account, Register \n" \
+        choice = input(
+                "1) if you don't have an account, Register \n" 
+                "2) if you have an account, Login \n "
                 "3) Exit The Program \n"
                 "Enter your choice (1, 2 or 3): ")
 
         # ================== Register ===================
         if choice == "1":
             print("\n--- Register ---")
-            print(register_user())
-            continue
 
+            register_user()
         # ================== Login ===================
         elif choice == "2":
             print("\n--- Login ---")
