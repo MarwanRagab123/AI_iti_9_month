@@ -3,6 +3,7 @@ from Authentication_System.Login import login_user
 from Projects_Details.add_projects import add_project
 from Projects_Details.delete_project import delete_project
 from Projects_Details.View_projects import view_projects
+from Projects_Details.Edit_Project import edit_project
 from helper.shape import show_banner
 
 user_id_global = None
@@ -15,14 +16,13 @@ if __name__ == "__main__":
             
         choice = input(
                 "1) if you don't have an account, Register \n" 
-                "2) if you have an account, Login \n "
+                "2) if you have an account, Login\n "
                 "3) Exit The Program \n"
                 "Enter your choice (1, 2 or 3): ")
 
         # ================== Register ===================
         if choice == "1":
             print("\n--- Register ---")
-
             register_user()
         # ================== Login ===================
         elif choice == "2":
@@ -34,9 +34,6 @@ if __name__ == "__main__":
 
             user_id_global = user_id
             print(f"Welcome {user_id_global}!")
-
-       
-
         
             
             # ========== Project Menu ==========
@@ -47,7 +44,8 @@ if __name__ == "__main__":
                     "1) Add Project\n"
                     "2) Display Projects\n"
                     "3) Delete Project\n"
-                    "4) Logout\n"
+                    "4) Update Project\n"
+                    "5) Logout\n"
                     "Enter your choice: "
                 )
 
@@ -68,10 +66,20 @@ if __name__ == "__main__":
                     print(delete_project(user_id_global, project_id))
 
                     print("\n--- Your Projects ---")
+
                     view_projects(user_id_global)
 
+                elif views=="4":
+                    print("\n--- Project Update ---")
+                    project_id = input("Enter project ID to Updated (e.g., p0): ")
+                    if project_id:
+                        edit_project(user_id_global,project_id)
+                    else:
+                        print("Not valid please try again!")
+                        continue
+
                 # ----- Logout -----
-                elif views == "4":
+                elif views == "5":
                     print("Logging out...")
                     break
 
