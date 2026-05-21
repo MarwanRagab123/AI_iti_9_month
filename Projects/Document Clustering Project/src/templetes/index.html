@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document Clustering Demo</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      
+      header {
+        text-align: center;
+        color: white;
+        margin-bottom: 40px;
+      }
+      
+      header h1 {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      }
+      
+      header p {
+        font-size: 1.1em;
+        opacity: 0.9;
+      }
+      
+      .nav-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+      
+      .nav-tabs button {
+        flex: 1;
+        padding: 12px 20px;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      }
+      
+      .nav-tabs button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+      
+      .nav-tabs button.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #667eea;
+      }
+      
+      .tab-content {
+        display: none;
+      }
+      
+      .tab-content.active {
+        display: block;
+      }
+      
+      .card {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        margin-bottom: 20px;
+      }
+      
+      .form-group {
+        margin-bottom: 20px;
+      }
+      
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 1em;
+        resize: vertical;
+        min-height: 150px;
+        transition: border-color 0.3s ease;
+      }
+      
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      
+      select, input[type="number"] {
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s ease;
+      }
+      
+      select:focus, input[type="number"]:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+      
+      button.btn-primary {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+      }
+      
+      button.btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+      }
+      
+      button.btn-primary:active {
+        transform: translateY(0);
+      }
+      
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+      
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .results {
+        display: none;
+      }
+      
+      .result-section {
+        margin-top: 20px;
+      }
+      
+      .result-section h3 {
+        color: #667eea;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+      }
+      
+      .metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+      
+      .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+      }
+      
+      .metric-card .value {
+        font-size: 2em;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+      
+      .metric-card .label {
+        font-size: 0.9em;
+        opacity: 0.9;
+      }
+      
+      .cluster-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 15px;
+      }
+      
+      .terms-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      
+      .term-tag {
+        background: #667eea;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85em;
+      }
+      
+      .examples-list {
+        list-style: none;
+        margin-top: 10px;
+      }
+      
+      .examples-list li {
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+        color: #555;
+      }
+      
+      .examples-list li:last-child {
+        border-bottom: none;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+        background: white;
+      }
+      
+      table th {
+        background: #667eea;
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+      }
+      
+      table td {
+        padding: 12px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      
+      table tr:hover {
+        background: #f5f5f5;
+      }
+      
+      .error-message {
+        background: #ff6b6b;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      
+      .success-message {
+        background: #51cf66;
+        color: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      
+      @media (max-width: 768px) {
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+        
+        .metrics {
+          grid-template-columns: 1fr;
+        }
+        
+        header h1 {
+          font-size: 1.8em;
+        }
+        
+        .nav-tabs {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📊 Document Clustering</h1>
+        <p>Organize your documents with intelligent clustering algorithms</p>
+      </header>
+      
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('predict')">Predict</button>
+        <button class="tab-btn" onclick="switchTab('evaluate')">Evaluate</button>
+      </div>
+      
+      <!-- PREDICT TAB -->
+      <div id="predict" class="tab-content active">
+        <div class="card">
+          <h2>🔍 Predict Cluster</h2>
+          <form id="predict-form">
+            <div class="form-group">
+              <label for="text_input">Enter Document Text:</label>
+              <textarea id="text_input" name="text_input" placeholder="Enter your document here..."></textarea>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="model_type">Select Model:</label>
+                <select id="model_type" name="model_type">
+                  <option value="kmeans">K-Means Clustering</option>
+                  <option value="hierarchical">Hierarchical Clustering</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="n_clusters">Number of Clusters:</label>
+                <input id="n_clusters" name="n_clusters" type="number" value="6" min="2" max="50">
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-primary">🚀 Predict Cluster</button>
+          </form>
+          
+          <div class="error-message" id="error-msg"></div>
+          <div class="success-message" id="success-msg"></div>
+          <div class="loading" id="loading"><div class="spinner"></div><p>Processing...</p></div>
+          <div class="results" id="results"></div>
+        </div>
+      </div>
+      
+      <!-- EVALUATE TAB -->
+      <div id="evaluate" class="tab-content">
+        <div class="card">
+          <h2>📈 Model Evaluation</h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eval_model_type">Select Model:</label>
+              <select id="eval_model_type" name="eval_model_type">
+                <option value="kmeans">K-Means Clustering</option>
+                <option value="hierarchical">Hierarchical Clustering</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label for="eval_n_clusters">Number of Clusters:</label>
+              <input id="eval_n_clusters" name="eval_n_clusters" type="number" value="6" min="2" max="50">
+            </div>
+          </div>
+          
+          <button class="btn-primary" onclick="evaluateModel()">📊 Evaluate Model</button>
+          
+          <div class="error-message" id="eval-error-msg"></div>
+          <div class="loading" id="eval-loading"><div class="spinner"></div><p>Evaluating model...</p></div>
+          <div class="results" id="eval-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function switchTab(tabName) {
+        // Hide all tabs
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        
+        // Remove active class from all buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        
+        // Show selected tab and mark button as active
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+      }
+
+      function showError(msg, elementId = 'error-msg') {
+        const errEl = document.getElementById(elementId);
+        errEl.textContent = msg;
+        errEl.style.display = 'block';
+      }
+
+      function hideError(elementId = 'error-msg') {
+        document.getElementById(elementId).style.display = 'none';
+      }
+
+      function showLoading(elementId = 'loading') {
+        document.getElementById(elementId).style.display = 'block';
+      }
+
+      function hideLoading(elementId = 'loading') {
+        document.getElementById(elementId).style.display = 'none';
+      }
+
+      function renderResult(json) {
+        const container = document.getElementById('results');
+        container.innerHTML = '';
+
+        // Metrics
+        const metricsDiv = document.createElement('div');
+        metricsDiv.className = 'metrics';
+        
+        const metricCluster = document.createElement('div');
+        metricCluster.className = 'metric-card';
+        metricCluster.innerHTML = `
+          <div class="label">Predicted Cluster</div>
+          <div class="value">#${json.predicted_cluster}</div>
+        `;
+        metricsDiv.appendChild(metricCluster);
+        
+        if (json.silhouette !== null) {
+          const metricSilhouette = document.createElement('div');
+          metricSilhouette.className = 'metric-card';
+          metricSilhouette.innerHTML = `
+            <div class="label">Silhouette Score</div>
+            <div class="value">${json.silhouette.toFixed(3)}</div>
+          `;
+          metricsDiv.appendChild(metricSilhouette);
+        }
+        
+        if (json.davies_bouldin !== null) {
+          const metricDB = document.createElement('div');
+          metricDB.className = 'metric-card';
+          metricDB.innerHTML = `
+            <div class="label">Davies-Bouldin Score</div>
+            <div class="value">${json.davies_bouldin.toFixed(3)}</div>
+          `;
+          metricsDiv.appendChild(metricDB);
+        }
+        
+        container.appendChild(metricsDiv);
+
+        // Cluster Details
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'result-section';
+        detailsDiv.innerHTML = `<h3>📍 Cluster Details</h3>`;
+        
+        const clusterBox = document.createElement('div');
+        clusterBox.className = 'cluster-box';
+        
+        const countP = document.createElement('p');
+        countP.innerHTML = `<strong>Cluster Size:</strong> ${json.cluster_count} documents`;
+        clusterBox.appendChild(countP);
+        
+        if (json.cluster_top_terms && json.cluster_top_terms.length > 0) {
+          const termsTitle = document.createElement('p');
+          termsTitle.innerHTML = '<strong>Top Terms:</strong>';
+          clusterBox.appendChild(termsTitle);
+          
+          const termsList = document.createElement('div');
+          termsList.className = 'terms-list';
+          json.cluster_top_terms.forEach(term => {
+            const tag = document.createElement('span');
+            tag.className = 'term-tag';
+            tag.textContent = term;
+            termsList.appendChild(tag);
+          });
+          clusterBox.appendChild(termsList);
+        }
+        
+        detailsDiv.appendChild(clusterBox);
+        container.appendChild(detailsDiv);
+
+        // Example Documents
+        if (json.cluster_examples && json.cluster_examples.length > 0) {
+          const examplesDiv = document.createElement('div');
+          examplesDiv.className = 'result-section';
+          examplesDiv.innerHTML = `<h3>📄 Example Documents</h3>`;
+          
+          const exList = document.createElement('ul');
+          exList.className = 'examples-list';
+          json.cluster_examples.forEach(ex => {
+            const li = document.createElement('li');
+            li.textContent = ex;
+            exList.appendChild(li);
+          });
+          examplesDiv.appendChild(exList);
+          container.appendChild(examplesDiv);
+        }
+
+        // Cluster Summary Table
+        if (json.summary) {
+          const summaryDiv = document.createElement('div');
+          summaryDiv.className = 'result-section';
+          summaryDiv.innerHTML = `<h3>📊 All Clusters Summary</h3>`;
+          
+          const table = document.createElement('table');
+          const header = document.createElement('tr');
+          header.innerHTML = '<th>Cluster</th><th>Count</th>';
+          table.appendChild(header);
+          
+          Object.keys(json.summary).sort((a,b) => parseInt(a) - parseInt(b)).forEach(k => {
+            const row = document.createElement('tr');
+            const count = json.summary[k].count || 0;
+            row.innerHTML = `<td>#${k}</td><td>${count}</td>`;
+            table.appendChild(row);
+          });
+          
+          summaryDiv.appendChild(table);
+          container.appendChild(summaryDiv);
+        }
+
+        container.style.display = 'block';
+      }
+
+      document.getElementById('predict-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        hideError();
+        const resDiv = document.getElementById('results');
+        resDiv.style.display = 'none';
+        showLoading();
+
+        const form = e.target;
+        const data = new FormData(form);
+
+        try {
+          const resp = await fetch('/predict', { method: 'POST', body: data });
+          if (!resp.ok) {
+            const err = await resp.json();
+            showError('Error: ' + (err.error || resp.statusText));
+          } else {
+            // backend returns plain JSON string with the cluster name
+            const name = await resp.json();
+            // show only the cluster name
+            resDiv.innerHTML = `<div class="card"><h2>Predicted Cluster</h2><p style="font-size:1.4em;font-weight:700;">${name}</p></div>`;
+            resDiv.style.display = 'block';
+          }
+        } catch (error) {
+          showError('Network error: ' + error.message);
+        } finally {
+          hideLoading();
+        }
+      });
+
+      function renderEvaluateResult(json) {
+        const container = document.getElementById('eval-results');
+        container.innerHTML = '';
+
+        // Metrics
+        const metricsDiv = document.createElement('div');
+        metricsDiv.className = 'metrics';
+        
+        const modelInfo = document.createElement('div');
+        modelInfo.className = 'metric-card';
+        modelInfo.innerHTML = `
+          <div class="label">Model Configuration</div>
+          <div class="value">${json.model_type.toUpperCase()}</div>
+          <div style="font-size: 0.9em; margin-top: 10px;">${json.n_clusters} clusters</div>
+        `;
+        metricsDiv.appendChild(modelInfo);
+        
+        const metricSilhouette = document.createElement('div');
+        metricSilhouette.className = 'metric-card';
+        metricSilhouette.innerHTML = `
+          <div class="label">Silhouette Score (higher is better)</div>
+          <div class="value">${json.silhouette.toFixed(4)}</div>
+        `;
+        metricsDiv.appendChild(metricSilhouette);
+        
+        const metricDB = document.createElement('div');
+        metricDB.className = 'metric-card';
+        metricDB.innerHTML = `
+          <div class="label">Davies-Bouldin Score (lower is better)</div>
+          <div class="value">${json.davies_bouldin.toFixed(4)}</div>
+        `;
+        metricsDiv.appendChild(metricDB);
+        
+        container.appendChild(metricsDiv);
+
+        // Cluster Interpretation
+        if (json.interpretation) {
+          const interpDiv = document.createElement('div');
+          interpDiv.className = 'result-section';
+          interpDiv.innerHTML = `<h3>🏷️ Cluster Interpretation</h3>`;
+          
+          Object.keys(json.interpretation).sort((a,b) => parseInt(a) - parseInt(b)).forEach(clusterId => {
+            const cluster = json.interpretation[clusterId];
+            const box = document.createElement('div');
+            box.className = 'cluster-box';
+            
+            const title = document.createElement('h4');
+            title.textContent = `Cluster #${clusterId}`;
+            title.style.color = '#667eea';
+            box.appendChild(title);
+            
+            const count = document.createElement('p');
+            count.textContent = `📊 Size: ${cluster.count} documents`;
+            box.appendChild(count);
+            
+            if (cluster.top_terms) {
+              const termsP = document.createElement('p');
+              termsP.style.marginBottom = '8px';
+              termsP.innerHTML = '<strong>Key Terms:</strong>';
+              box.appendChild(termsP);
+              
+              const termsList = document.createElement('div');
+              termsList.className = 'terms-list';
+              cluster.top_terms.forEach(term => {
+                const tag = document.createElement('span');
+                tag.className = 'term-tag';
+                tag.textContent = term;
+                termsList.appendChild(tag);
+              });
+              box.appendChild(termsList);
+            }
+            
+            if (cluster.examples && cluster.examples.length > 0) {
+              const exP = document.createElement('p');
+              exP.style.marginTop = '12px';
+              exP.style.marginBottom = '8px';
+              exP.innerHTML = '<strong>Sample Documents:</strong>';
+              box.appendChild(exP);
+              
+              const exList = document.createElement('ul');
+              exList.className = 'examples-list';
+              cluster.examples.forEach(ex => {
+                const li = document.createElement('li');
+                li.textContent = ex;
+                exList.appendChild(li);
+              });
+              box.appendChild(exList);
+            }
+            
+            interpDiv.appendChild(box);
+          });
+          
+          container.appendChild(interpDiv);
+        }
+
+        container.style.display = 'block';
+      }
+
+      function evaluateModel() {
+        const modelType = document.getElementById('eval_model_type').value;
+        const nClusters = document.getElementById('eval_n_clusters').value;
+        
+        document.getElementById('eval-error-msg').style.display = 'none';
+        document.getElementById('eval-results').style.display = 'none';
+        showLoading('eval-loading');
+
+        fetch('/api/evaluate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model_type: modelType,
+            n_clusters: parseInt(nClusters)
+          })
+        })
+        .then(resp => {
+          if (!resp.ok) throw new Error('Evaluation failed');
+          return resp.json();
+        })
+        .then(result => {
+          renderEvaluateResult(result);
+        })
+        .catch(error => {
+          showError('Error: ' + error.message, 'eval-error-msg');
+        })
+        .finally(() => {
+          hideLoading('eval-loading');
+        });
+      }
+    </script>
+  </body>
+</html>
+          return;
+        }
+        const json = await resp.json();
+        renderResult(json);
+      });
+    </script>
+  </body>
+</html>
